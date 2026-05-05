@@ -98,14 +98,18 @@ const SYSTEMS = {
 };
 
 let transcript = [];
+let transcriptChart = null;
 
 // DOM Init
 document.addEventListener('DOMContentLoaded', () => {
+  loadFromStorage();
   setupLanguageToggle();
   setupThemeToggle();
   setupSearchableDropdown('from');
   setupSearchableDropdown('to');
-  
+  setupPWA();
+  setupModalKeyboard();
+
   // Set defaults
   document.getElementById('country-to').value = 'germany';
   document.getElementById('country-to-input').value = 'Germany (1-5)';
@@ -127,6 +131,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     updateBadge('from', toVal);
     updateBadge('to', fromVal);
+  });
+
+  // Close modal on overlay click
+  document.getElementById('modal-overlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
   });
 });
 
@@ -152,9 +161,16 @@ function applyTranslations() {
 // Theme Logic
 function setupThemeToggle() {
   const btn = document.getElementById('theme-toggle');
+  // Restore saved theme
+  const savedTheme = localStorage.getItem('gc_theme');
+  if (savedTheme === 'light') {
+    document.body.classList.add('light-theme');
+    btn.textContent = '🌙';
+  }
   btn.addEventListener('click', () => {
     const isLight = document.body.classList.toggle('light-theme');
     btn.textContent = isLight ? '🌙' : '☀️';
+    localStorage.setItem('gc_theme', isLight ? 'light' : 'dark');
   });
 }
 
@@ -351,58 +367,122 @@ function copyResult() {
   });
 }
 
-function addToTranscript() {
+// ==========================================
+// MODAL LOGIC
+// ==========================================
+function openModal() {
   if (!window.lastResult) return;
-  const courseName = prompt("Enter Course Name:", window.lastResult.course);
-  if (!courseName) return;
-  window.lastResult.course = courseName;
-  
-  transcript.push(window.lastResult);
+  const overlay = document.getElementById('modal-overlay');
+  document.getElementById('modal-course').value = window.lastResult.course || '';
+  document.getElementById('modal-credits').value = '';
+  overlay.classList.add('show');
+  setTimeout(() => document.getElementById('modal-course').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+function setupModalKeyboard() {
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Enter' && document.getElementById('modal-overlay').classList.contains('show')) {
+      confirmAddToTranscript();
+    }
+  });
+}
+
+function confirmAddToTranscript() {
+  if (!window.lastResult) return;
+  const name = document.getElementById('modal-course').value.trim() || `Course ${transcript.length + 1}`;
+  const credits = parseFloat(document.getElementById('modal-credits').value) || 0;
+  window.lastResult.course = name;
+  window.lastResult.credits = credits;
+  transcript.push({ ...window.lastResult });
+  closeModal();
   renderTranscript();
+  saveToStorage();
+}
+
+// ==========================================
+// LOCALSTORAGE PERSISTENCE
+// ==========================================
+function saveToStorage() {
+  localStorage.setItem('gc_transcript', JSON.stringify(transcript));
+}
+
+function loadFromStorage() {
+  try {
+    const saved = localStorage.getItem('gc_transcript');
+    if (saved) {
+      transcript = JSON.parse(saved);
+      if (transcript.length > 0) renderTranscript();
+    }
+  } catch(e) {
+    transcript = [];
+  }
 }
 
 function renderTranscript() {
   document.getElementById('transcript-section').style.display = 'block';
   const tbody = document.getElementById('transcript-body');
-  
-  let totalTarget = 0;
-  
+
+  // Weighted GPA calculation
+  let totalWeighted = 0;
+  let totalCredits = 0;
+  let simpleTotal = 0;
+
   let html = transcript.map((t, i) => {
-    totalTarget += parseFloat(t.tgtGrade);
+    const tgt = parseFloat(t.tgtGrade);
+    const cr = t.credits || 0;
+    simpleTotal += tgt;
+    if (cr > 0) { totalWeighted += tgt * cr; totalCredits += cr; }
     const badgeClass = t.status === 'PASS' ? 'status-badge pass' : 'status-badge fail';
-    const statusIcon = t.status === 'PASS' ? '✓' : '✗';
+    const credStr = cr > 0 ? `<span class="credit-chip">${cr} cr</span>` : `<span class="credit-chip muted">—</span>`;
     return `
       <tr>
         <td>
           <div class="course-name">${t.course}</div>
-          <div class="course-sys">Source: ${t.srcGrade}</div>
+          <div class="course-sys">Source: ${t.srcGrade} &bull; ${t.fromLabel || ''}</div>
         </td>
-        <td>
-          <div class="grade-pill">${t.tgtGrade}</div>
-        </td>
+        <td>${credStr}</td>
+        <td><div class="grade-pill">${t.tgtGrade}</div></td>
         <td><span class="sys-label-sm">${t.sysLabel}</span></td>
         <td><span class="${badgeClass}"><span class="status-dot"></span>${t.status}</span></td>
         <td style="text-align: right;">
-          <button class="del-btn" onclick="removeTranscript(${i})" title="Remove item">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+          <button class="del-btn" onclick="removeTranscript(${i})" title="Remove">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
           </button>
         </td>
       </tr>
     `;
   }).join('');
-  
+
+  const avg = transcript.length > 0 ? (simpleTotal / transcript.length).toFixed(2) : '—';
+  const wGpa = totalCredits > 0 ? (totalWeighted / totalCredits).toFixed(2) : null;
+  const displayGpa = wGpa ? wGpa : avg;
+
   if (transcript.length > 0) {
-    const avg = (totalTarget / transcript.length).toFixed(2);
     html += `
       <tr class="summary-row">
-        <td style="text-align: right; font-weight: 500; color: var(--text-muted);" colspan="1">Average Grade</td>
-        <td><div class="grade-pill highlight">${avg}</div></td>
+        <td colspan="2" style="color: var(--text-muted); font-size: 0.85rem;">
+          ${wGpa ? 'Credit-weighted avg' : 'Simple avg (add credits for weighted GPA)'}
+        </td>
+        <td><div class="grade-pill highlight">${displayGpa}</div></td>
         <td colspan="3"></td>
       </tr>
     `;
   }
-  
+
   tbody.innerHTML = html;
+
+  // Update subtitle
+  const subtitle = totalCredits > 0
+    ? `${transcript.length} course${transcript.length !== 1 ? 's' : ''} &bull; ${totalCredits} credits &bull; Weighted GPA: <strong>${wGpa}</strong>`
+    : `${transcript.length} course${transcript.length !== 1 ? 's' : ''} &bull; Avg: <strong>${avg}</strong>`;
+  document.getElementById('transcript-subtitle').innerHTML = subtitle;
+
+  renderChart();
 }
 
 function removeTranscript(index) {
@@ -412,26 +492,162 @@ function removeTranscript(index) {
   } else {
     renderTranscript();
   }
+  saveToStorage();
 }
 
 function clearTranscript() {
   transcript = [];
   document.getElementById('transcript-section').style.display = 'none';
+  if (transcriptChart) { transcriptChart.destroy(); transcriptChart = null; }
+  saveToStorage();
 }
 
 function exportCSV() {
   if (transcript.length === 0) return;
-  const headers = ['Course', 'Source Grade', 'Target Grade', 'Status'];
-  const rows = transcript.map(t => `"${t.course}",${t.srcGrade},${t.tgtGrade},${t.status}`);
-  const csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.join("\n");
-  
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", "transcript.csv");
+  const headers = ['Course', 'Credits', 'Source Grade', 'Target System', 'Target Grade', 'Status'];
+  const rows = transcript.map(t =>
+    `"${t.course}",${t.credits || 0},${t.srcGrade},"${t.sysLabel}",${t.tgtGrade},${t.status}`
+  );
+  const csvContent = 'data:text/csv;charset=utf-8,' + headers.join(',') + '\n' + rows.join('\n');
+  const link = document.createElement('a');
+  link.setAttribute('href', encodeURI(csvContent));
+  link.setAttribute('download', 'gradeconvert_transcript.csv');
   document.body.appendChild(link);
   link.click();
   link.remove();
+}
+
+// ==========================================
+// CSV IMPORT
+// ==========================================
+function importCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const lines = e.target.result.split('\n').filter(l => l.trim());
+    if (lines.length < 2) { alert('CSV must have a header row and at least one data row.'); return; }
+    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim().toLowerCase());
+    const courseIdx = headers.findIndex(h => h.includes('course') || h.includes('name'));
+    const creditsIdx = headers.findIndex(h => h.includes('credit'));
+    const srcIdx = headers.findIndex(h => h.includes('source') || h.includes('grade'));
+    const tgtIdx = headers.findIndex(h => h.includes('target'));
+    const statusIdx = headers.findIndex(h => h.includes('status'));
+
+    let imported = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(',').map(c => c.replace(/"/g, '').trim());
+      if (!cols[0]) continue;
+      transcript.push({
+        course: courseIdx >= 0 ? cols[courseIdx] : `Imported Course ${i}`,
+        credits: creditsIdx >= 0 ? parseFloat(cols[creditsIdx]) || 0 : 0,
+        srcGrade: srcIdx >= 0 ? cols[srcIdx] : '—',
+        tgtGrade: tgtIdx >= 0 ? cols[tgtIdx] : '—',
+        sysLabel: 'Imported',
+        fromLabel: '',
+        status: statusIdx >= 0 ? cols[statusIdx] : 'PASS'
+      });
+      imported++;
+    }
+    if (imported > 0) { renderTranscript(); saveToStorage(); }
+    else alert('No valid rows found in the CSV file.');
+  };
+  reader.readAsText(file);
+  event.target.value = ''; // reset so same file can be re-imported
+}
+
+// ==========================================
+// CHART.JS VISUALIZATION
+// ==========================================
+let currentChartType = 'bar';
+
+function switchChart(type, btn) {
+  currentChartType = type;
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderChart();
+}
+
+function renderChart() {
+  const ctx = document.getElementById('transcript-chart');
+  if (!ctx || transcript.length === 0) return;
+
+  const labels = transcript.map(t => t.course.length > 15 ? t.course.substring(0, 15) + '…' : t.course);
+  const data = transcript.map(t => parseFloat(t.tgtGrade));
+  const colors = transcript.map(t =>
+    t.status === 'PASS' ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)'
+  );
+  const borderColors = transcript.map(t =>
+    t.status === 'PASS' ? 'rgb(16, 185, 129)' : 'rgb(239, 68, 68)'
+  );
+
+  if (transcriptChart) transcriptChart.destroy();
+
+  const isLight = document.body.classList.contains('light-theme');
+  const textColor = isLight ? '#0f172a' : '#a0a0aa';
+  const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)';
+
+  transcriptChart = new Chart(ctx, {
+    type: currentChartType,
+    data: {
+      labels,
+      datasets: [{
+        label: 'Converted Grade',
+        data,
+        backgroundColor: currentChartType === 'line' ? 'rgba(99, 102, 241, 0.15)' : colors,
+        borderColor: currentChartType === 'line' ? 'rgb(99, 102, 241)' : borderColors,
+        borderWidth: 2,
+        borderRadius: currentChartType === 'bar' ? 8 : 0,
+        fill: currentChartType === 'line',
+        tension: 0.4,
+        pointBackgroundColor: borderColors,
+        pointRadius: 5,
+        pointHoverRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => transcript[items[0].dataIndex].course,
+            label: (item) => ` Grade: ${item.raw} (${transcript[item.dataIndex].status})`
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: textColor }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor }, grid: { color: gridColor } }
+      }
+    }
+  });
+}
+
+// ==========================================
+// PWA INSTALL
+// ==========================================
+let deferredInstallPrompt = null;
+
+function setupPWA() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const wrap = document.getElementById('pwa-install-wrap');
+    const btn = document.getElementById('pwa-install-btn');
+    if (wrap) wrap.style.display = 'block';
+    if (btn) btn.addEventListener('click', () => {
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.then(() => {
+        deferredInstallPrompt = null;
+        if (wrap) wrap.style.display = 'none';
+      });
+    });
+  });
 }
 
 // Export for testing
