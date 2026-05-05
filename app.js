@@ -362,15 +362,45 @@ function addToTranscript() {
 function renderTranscript() {
   document.getElementById('transcript-section').style.display = 'block';
   const tbody = document.getElementById('transcript-body');
-  tbody.innerHTML = transcript.map((t, i) => `
-    <tr>
-      <td><strong>${t.course}</strong></td>
-      <td>${t.srcGrade}</td>
-      <td><strong>${t.tgtGrade}</strong> <small>${t.sysLabel}</small></td>
-      <td class="${t.status === 'PASS' ? 'pass' : 'fail'}">${t.status}</td>
-      <td><button class="del-btn" onclick="removeTranscript(${i})">&times;</button></td>
-    }
-  `).join('');
+  
+  let totalTarget = 0;
+  
+  let html = transcript.map((t, i) => {
+    totalTarget += parseFloat(t.tgtGrade);
+    const badgeClass = t.status === 'PASS' ? 'status-badge pass' : 'status-badge fail';
+    const statusIcon = t.status === 'PASS' ? '✓' : '✗';
+    return `
+      <tr>
+        <td>
+          <div class="course-name">${t.course}</div>
+          <div class="course-sys">Source: ${t.srcGrade}</div>
+        </td>
+        <td>
+          <div class="grade-pill">${t.tgtGrade}</div>
+        </td>
+        <td><span class="sys-label-sm">${t.sysLabel}</span></td>
+        <td><span class="${badgeClass}"><span class="status-dot"></span>${t.status}</span></td>
+        <td style="text-align: right;">
+          <button class="del-btn" onclick="removeTranscript(${i})" title="Remove item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  
+  if (transcript.length > 0) {
+    const avg = (totalTarget / transcript.length).toFixed(2);
+    html += `
+      <tr class="summary-row">
+        <td style="text-align: right; font-weight: 500; color: var(--text-muted);" colspan="1">Average Grade</td>
+        <td><div class="grade-pill highlight">${avg}</div></td>
+        <td colspan="3"></td>
+      </tr>
+    `;
+  }
+  
+  tbody.innerHTML = html;
 }
 
 function removeTranscript(index) {
