@@ -1,0 +1,9 @@
+{
+  "project": "Universal Grade Converter",
+  "testCommand": "npm test",
+  "guidelines": [
+    "Run `npm test` after any core logic changes in app.js.",
+    "Do not break the glassmorphism UI.",
+    "Ensure both Light Mode and Dark Mode are maintained when editing style.css."
+  ]
+}

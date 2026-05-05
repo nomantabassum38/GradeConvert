@@ -232,6 +232,34 @@ function getECTS(pct) {
   return 'F';
 }
 
+function calculateConversion(obtained, srcMin, srcMax, invertedSrc, tgtMin, tgtMax, invertedTgt, fromSys, toSys) {
+  // 1. Compute Percentile from Source
+  let pct = 0;
+  if (fromSys === 'germany') {
+    pct = (4 - obtained) / 3;
+  } else {
+    if (!invertedSrc) {
+      pct = (obtained - srcMin) / (srcMax - srcMin);
+    } else {
+      pct = (srcMin - obtained) / (srcMin - srcMax);
+    }
+  }
+  
+  // 2. Map Percentile to Target
+  let targetGrade = 0;
+  if (toSys === 'germany') {
+    targetGrade = 1 + 3 * (1 - pct);
+  } else {
+    if (!invertedTgt) {
+      targetGrade = tgtMin + pct * (tgtMax - tgtMin);
+    } else {
+      targetGrade = tgtMin - pct * (tgtMin - tgtMax);
+    }
+  }
+  
+  return { targetGrade: Math.round(targetGrade * 100) / 100, pct };
+}
+
 function convert() {
   const errorMsg = document.getElementById('error-msg');
   errorMsg.textContent = '';
@@ -254,35 +282,9 @@ function convert() {
   let invertedSrc = src.inverted;
   if (srcMin > srcMax) invertedSrc = true;
   
-  // 1. Compute Percentile from Source
-  let pct = 0;
-  if (fromSys === 'germany') {
-    pct = (4 - obtained) / 3;
-  } else {
-    if (!invertedSrc) {
-      pct = (obtained - srcMin) / (srcMax - srcMin);
-    } else {
-      pct = (srcMin - obtained) / (srcMin - srcMax);
-    }
-  }
+  const result = calculateConversion(obtained, srcMin, srcMax, invertedSrc, tgt.min, tgt.max, tgt.inverted, fromSys, toSys);
   
-  // 2. Map Percentile to Target
-  let targetGrade = 0;
-  let tgtMin = tgt.min; let tgtMax = tgt.max;
-  let invertedTgt = tgt.inverted;
-  
-  if (toSys === 'germany') {
-    targetGrade = 1 + 3 * (1 - pct);
-  } else {
-    if (!invertedTgt) {
-      targetGrade = tgtMin + pct * (tgtMax - tgtMin);
-    } else {
-      targetGrade = tgtMin - pct * (tgtMin - tgtMax);
-    }
-  }
-  
-  targetGrade = Math.round(targetGrade * 100) / 100;
-  displayResult(targetGrade, pct, obtained, src, tgt, toSys);
+  displayResult(result.targetGrade, result.pct, obtained, src, tgt, toSys);
 }
 
 function displayResult(targetGrade, pct, obtained, src, tgt, toSysId) {
@@ -431,3 +433,6 @@ function exportCSV() {
   link.click();
   link.remove();
 }
+
+// Export for testing
+if (typeof module !== 'undefined' && module.exports) { module.exports = { calculateConversion, SYSTEMS }; }

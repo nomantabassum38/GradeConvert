@@ -1,0 +1,4 @@
+{
+  "theme": "dark",
+  "projectContext": "This is a Universal Grade Converter built with vanilla JS and CSS. The math engine uses Any-to-Any percentile mapping, with a special case for the Modified Bavarian Formula (Germany/Austria). Automated tests are run via Jest in a jsdom environment. Make sure any new UI components follow the existing glassmorphism aesthetic."
+}

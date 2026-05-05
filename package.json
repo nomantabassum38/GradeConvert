@@ -1,0 +1,25 @@
+{
+  "name": "grade-converter",
+  "version": "1.0.0",
+  "description": "A professional, open-source web tool that converts grades from 25+ international grading systems to the German academic grading scale (1–5). Built as a static site — no server, no dependencies, no data stored.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nomantabassum38/GradeConvert.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nomantabassum38/GradeConvert/issues"
+  },
+  "homepage": "https://github.com/nomantabassum38/GradeConvert#readme",
+  "devDependencies": {
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0"
+  }
+}
