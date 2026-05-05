@@ -38,35 +38,63 @@ let currentLang = 'en';
 
 // DB
 const SYSTEMS = {
-  austria: { min: 5, max: 1, inverted: true, label: 'Austria (1-5)', note: 'Lower is better. 1 = best, 5 = worst.' },
-  belgium: { min: 0, max: 20, inverted: false, label: 'Belgium (0-20)', note: 'Higher is better. 20 = best.' },
-  czechia: { min: 4, max: 1, inverted: true, label: 'Czech Republic (1-4)', note: 'Lower is better. 1 = best, 4 = worst.' },
-  denmark: { min: -3, max: 12, inverted: false, label: 'Denmark (-3 to 12)', note: 'Higher is better. 12 = best.' },
-  finland: { min: 0, max: 5, inverted: false, label: 'Finland (0-5)', note: 'Higher is better. 5 = best.' },
-  france: { min: 0, max: 20, inverted: false, label: 'France (0-20)', note: 'Higher is better. 20 = best.' },
-  germany: { min: 5, max: 1, inverted: true, label: 'Germany (1-5)', note: 'Lower is better. 1 = best, 5 = worst.' },
-  hungary: { min: 1, max: 5, inverted: false, label: 'Hungary (1-5)', note: 'Higher is better. 5 = best.' },
-  italy: { min: 18, max: 30, inverted: false, label: 'Italy (18-30)', note: 'Higher is better. 30 = best.' },
-  netherlands: { min: 1, max: 10, inverted: false, label: 'Netherlands (1-10)', note: 'Higher is better. 10 = best.' },
-  norway: { min: 0, max: 6, inverted: false, label: 'Norway (0-6)', note: 'Higher is better. A(6) to F(0).' },
-  poland: { min: 2, max: 5, inverted: false, label: 'Poland (2-5)', note: 'Higher is better. 5 = best.' },
-  russia: { min: 2, max: 5, inverted: false, label: 'Russia (2-5)', note: 'Higher is better. 5 = best.' },
-  spain: { min: 0, max: 10, inverted: false, label: 'Spain (0-10)', note: 'Higher is better. 10 = best.' },
-  sweden: { min: 0, max: 5, inverted: false, label: 'Sweden (0-5)', note: 'Higher is better. 5 = best.' },
-  switzerland: { min: 1, max: 6, inverted: false, label: 'Switzerland (1-6)', note: 'Higher is better. 6 = best, 1 = worst.' },
-  uk: { min: 0, max: 100, inverted: false, label: 'UK Percentage', note: 'Higher is better. 100% = best.' },
-  usa: { min: 0, max: 4, inverted: false, label: 'US GPA (0-4)', note: 'Higher is better. 4.0 = best.' },
-  usa_pct: { min: 0, max: 100, inverted: false, label: 'US Percentage', note: 'Higher is better. 100% = best.' },
-  canada: { min: 0, max: 4, inverted: false, label: 'Canada GPA (0-4)', note: 'Higher is better. 4.0 = best.' },
-  brazil: { min: 0, max: 10, inverted: false, label: 'Brazil (0-10)', note: 'Higher is better. 10 = best.' },
-  mexico: { min: 0, max: 10, inverted: false, label: 'Mexico (0-10)', note: 'Higher is better. 10 = best.' },
-  china: { min: 0, max: 100, inverted: false, label: 'China (0-100)', note: 'Higher is better. 100 = best.' },
-  india: { min: 0, max: 100, inverted: false, label: 'India (0-100)', note: 'Higher is better. 100 = best.' },
-  japan: { min: 0, max: 100, inverted: false, label: 'Japan (0-100)', note: 'Higher is better. 100 = best.' },
-  australia: { min: 0, max: 100, inverted: false, label: 'Australia (0-100)', note: 'Higher is better. 100 = best.' },
-  pakistan: { min: 0, max: 100, inverted: false, label: 'Pakistan (0-100)', note: 'Higher is better. 100 = best.' },
-  turkey: { min: 0, max: 100, inverted: false, label: 'Turkey (0-100)', note: 'Higher is better. 100 = best.' },
-  custom: { min: '', max: '', inverted: false, label: 'Custom Scale', note: 'Enter your own min and max values.' }
+  // Europe
+  germany: { min: 4, max: 1, inverted: true, label: 'Germany (1-5)', note: 'Lower is better. 1 = best, 4 = lowest pass.' },
+  germany_abitur: { min: 0, max: 15, inverted: false, label: 'Germany Abitur (0-15)', note: 'Higher is better. 15 = best.' },
+  italy_exam: { min: 18, max: 30, inverted: false, label: 'Italy Exam (18-30)', note: 'Higher is better. 30 = best.' },
+  italy_degree: { min: 66, max: 110, inverted: false, label: 'Italy Degree (66-110)', note: 'Higher is better. 110 = best.' },
+  uk: { min: 40, max: 100, inverted: false, label: 'UK Percentage (40-100%)', note: 'Higher is better. 100% = best, 40% = passing.' },
+  france: { min: 10, max: 20, inverted: false, label: 'France (10-20)', note: 'Higher is better. 20 = best, 10 = passing.' },
+  netherlands: { min: 5.5, max: 10, inverted: false, label: 'Netherlands (1-10)', note: 'Higher is better. 10 = best, 5.5 = passing.' },
+  spain: { min: 5, max: 10, inverted: false, label: 'Spain (0-10)', note: 'Higher is better. 10 = best, 5 = passing.' },
+  switzerland: { min: 4, max: 6, inverted: false, label: 'Switzerland (1-6)', note: 'Higher is better. 6 = best, 4 = passing.' },
+  austria: { min: 4, max: 1, inverted: true, label: 'Austria (1-5)', note: 'Lower is better. 1 = best, 4 = passing.' },
+  sweden: { min: 3, max: 5, inverted: false, label: 'Sweden (0-5)', note: 'Higher is better. 5 = best, 3 = passing.' },
+  russia: { min: 3, max: 5, inverted: false, label: 'Russia (2-5)', note: 'Higher is better. 5 = best, 3 = passing.' },
+  denmark: { min: 2, max: 12, inverted: false, label: 'Denmark (-3 to 12)', note: 'Higher is better. 12 = best, 2 = passing.' },
+  belgium: { min: 10, max: 20, inverted: false, label: 'Belgium (0-20)', note: 'Higher is better. 20 = best, 10 = passing.' },
+  poland: { min: 3, max: 5, inverted: false, label: 'Poland (2-5)', note: 'Higher is better. 5 = best, 3 = passing.' },
+  
+  // Asia & Pacific
+  pakistan_pct: { min: 50, max: 100, inverted: false, label: 'Pakistan (0-100%)', note: 'Higher is better. 100% = best.' },
+  pakistan_gpa: { min: 2.0, max: 4.0, inverted: false, label: 'Pakistan GPA (0.0-4.0)', note: 'Higher is better. 4.0 = best.' },
+  india_pct: { min: 40, max: 100, inverted: false, label: 'India (0-100%)', note: 'Higher is better. 100% = best.' },
+  india_cgpa: { min: 4.0, max: 10.0, inverted: false, label: 'India CGPA (0.0-10.0)', note: 'Higher is better. 10.0 = best.' },
+  china_pct: { min: 60, max: 100, inverted: false, label: 'China (0-100%)', note: 'Higher is better. 100 = best, 60 = pass.' },
+  china_gpa: { min: 1.0, max: 5.0, inverted: false, label: 'China GPA (0.0-5.0)', note: 'Higher is better. 5.0 = best.' },
+  japan_pct: { min: 60, max: 100, inverted: false, label: 'Japan (0-100%)', note: 'Higher is better. 100 = best.' },
+  japan_gpa: { min: 1.0, max: 4.0, inverted: false, label: 'Japan GPA (0.0-4.0)', note: 'Higher is better. 4.0 = best.' },
+  korea_pct: { min: 60, max: 100, inverted: false, label: 'South Korea (0-100%)', note: 'Higher is better. 100% = best.' },
+  korea_43: { min: 1.0, max: 4.3, inverted: false, label: 'South Korea GPA (0.0-4.3)', note: 'Higher is better. 4.3 = best.' },
+  korea_45: { min: 1.0, max: 4.5, inverted: false, label: 'South Korea GPA (0.0-4.5)', note: 'Higher is better. 4.5 = best.' },
+  australia_pct: { min: 50, max: 100, inverted: false, label: 'Australia (0-100%)', note: 'Higher is better. 100% = best.' },
+  australia_gpa: { min: 4.0, max: 7.0, inverted: false, label: 'Australia GPA (0.0-7.0)', note: 'Higher is better. 7.0 = best.' },
+  iran: { min: 10, max: 20, inverted: false, label: 'Iran (0-20)', note: 'Higher is better. 20 = best, 10 = passing.' },
+  turkey_pct: { min: 50, max: 100, inverted: false, label: 'Turkey (0-100%)', note: 'Higher is better. 100% = best.' },
+  turkey_gpa: { min: 2.0, max: 4.0, inverted: false, label: 'Turkey GPA (0.0-4.0)', note: 'Higher is better. 4.0 = best.' },
+  saudi_4: { min: 2.0, max: 4.0, inverted: false, label: 'Saudi Arabia GPA (0.0-4.0)', note: 'Higher is better. 4.0 = best.' },
+  saudi_5: { min: 3.0, max: 5.0, inverted: false, label: 'Saudi Arabia GPA (0.0-5.0)', note: 'Higher is better. 5.0 = best.' },
+
+  // Americas
+  usa_gpa: { min: 1.0, max: 4.0, inverted: false, label: 'US GPA (0.0-4.0)', note: 'Higher is better. 4.0 = best.' },
+  usa_pct: { min: 60, max: 100, inverted: false, label: 'US Percentage (0-100%)', note: 'Higher is better. 100% = best.' },
+  canada_4: { min: 1.0, max: 4.0, inverted: false, label: 'Canada GPA (0.0-4.0)', note: 'Higher is better. 4.0 = best.' },
+  canada_43: { min: 1.0, max: 4.3, inverted: false, label: 'Canada GPA (0.0-4.3)', note: 'Higher is better. 4.3 = best.' },
+  canada_9: { min: 4.0, max: 9.0, inverted: false, label: 'Canada GPA (0.0-9.0)', note: 'Higher is better. 9.0 = best.' },
+  canada_pct: { min: 50, max: 100, inverted: false, label: 'Canada Percentage', note: 'Higher is better. 100% = best.' },
+  brazil: { min: 5, max: 10, inverted: false, label: 'Brazil (0-10)', note: 'Higher is better. 10 = best.' },
+  mexico_10: { min: 6, max: 10, inverted: false, label: 'Mexico (0-10)', note: 'Higher is better. 10 = best.' },
+  mexico_100: { min: 60, max: 100, inverted: false, label: 'Mexico (0-100)', note: 'Higher is better. 100 = best.' },
+  argentina: { min: 4, max: 10, inverted: false, label: 'Argentina (0-10)', note: 'Higher is better. 10 = best, 4 = pass.' },
+
+  // Africa
+  nigeria_5: { min: 1.5, max: 5.0, inverted: false, label: 'Nigeria GPA (0.0-5.0)', note: 'Higher is better. 5.0 = best.' },
+  nigeria_pct: { min: 40, max: 100, inverted: false, label: 'Nigeria (0-100%)', note: 'Higher is better. 100% = best.' },
+  south_africa: { min: 50, max: 100, inverted: false, label: 'South Africa (0-100%)', note: 'Higher is better. 100% = best.' },
+  egypt: { min: 50, max: 100, inverted: false, label: 'Egypt (0-100%)', note: 'Higher is better. 100% = best.' },
+
+  // Other
+  custom: { min: '', max: '', inverted: false, label: 'Custom Scale', note: 'Enter your own min and max passing values.' }
 };
 
 let transcript = [];
