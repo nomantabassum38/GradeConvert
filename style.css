@@ -447,6 +447,7 @@ select:focus, input:focus {
   line-height: 1;
   background: linear-gradient(135deg, #fff, #a5b4fc);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
