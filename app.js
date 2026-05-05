@@ -1,7 +1,43 @@
-// Grading systems database
-// inverted: true means a lower number is better (e.g., Germany 1 is better than 5)
+// I18N Dictionary
+const i18n = {
+  en: {
+    nav_convert: 'Convert', nav_how: 'How it works', nav_systems: 'Systems',
+    hero_tag: 'Universal Grade Converter', hero_title_1: 'Convert any grade', hero_title_2: 'to any other scale.',
+    hero_sub: '25+ countries supported. Includes the modified Bavarian formula for German universities, and precise linear mapping for all other international systems.',
+    hero_cta: 'Start converting', conv_title: 'Grade Converter',
+    conv_sub: 'Select your source and target grading systems, enter your grade, and get an instant conversion.',
+    label_from: 'From System', label_to: 'To System', label_min: 'Min grade', label_worst: '(worst)',
+    label_max: 'Max grade', label_best: '(best)', label_obtained: 'Your obtained grade', btn_convert: 'Convert grade',
+    res_empty: 'Your converted grade will appear here', res_pos: 'Position on target scale',
+    lbl_best: 'Best', lbl_avg: 'Avg', lbl_worst: 'Worst', meta_orig: 'Original grade', meta_pct: 'Percentile',
+    meta_ects: 'Approx. ECTS', meta_status: 'Status', formula_lbl: 'Conversion formula applied',
+    btn_copy: 'Copy', btn_add: 'Add to Transcript', trans_title: 'Your Transcript', btn_clear: 'Clear',
+    btn_csv: 'Export CSV', btn_pdf: 'Save PDF', th_course: 'Course / Item', th_source: 'Source Grade',
+    th_target: 'Target Grade', th_status: 'Status', footer_desc: 'Free, open-source universal grade conversion tool.<br/>For academic use. Always verify with your institution.',
+    footer_bot: 'Built with care · No data stored · MIT License'
+  },
+  de: {
+    nav_convert: 'Umrechnen', nav_how: 'Wie es funktioniert', nav_systems: 'Systeme',
+    hero_tag: 'Universeller Notenrechner', hero_title_1: 'Rechne jede Note', hero_title_2: 'in ein anderes System um.',
+    hero_sub: 'Mehr als 25 Länder unterstützt. Beinhaltet die modifizierte bayerische Formel für deutsche Universitäten und präzises lineares Mapping für alle anderen Systeme.',
+    hero_cta: 'Jetzt umrechnen', conv_title: 'Notenrechner',
+    conv_sub: 'Wähle Ausgangs- und Zielsystem, gib deine Note ein und erhalte sofort das Ergebnis.',
+    label_from: 'Ausgangssystem', label_to: 'Zielsystem', label_min: 'Min Note', label_worst: '(schlechteste)',
+    label_max: 'Max Note', label_best: '(beste)', label_obtained: 'Deine Note', btn_convert: 'Note umrechnen',
+    res_empty: 'Deine umgerechnete Note erscheint hier', res_pos: 'Position auf der Zielskala',
+    lbl_best: 'Beste', lbl_avg: 'Durch.', lbl_worst: 'Schl.', meta_orig: 'Originalnote', meta_pct: 'Perzentil',
+    meta_ects: 'Ungefähr ECTS', meta_status: 'Status', formula_lbl: 'Angewandte Formel',
+    btn_copy: 'Kopieren', btn_add: 'Zum Zeugnis hinzufügen', trans_title: 'Dein Zeugnis', btn_clear: 'Leeren',
+    btn_csv: 'CSV Export', btn_pdf: 'PDF Speichern', th_course: 'Kurs / Modul', th_source: 'Originalnote',
+    th_target: 'Zielnote', th_status: 'Status', footer_desc: 'Kostenloses, Open-Source Universal-Notenrechner-Tool.<br/>Für akademische Zwecke. Immer mit der Hochschule abgleichen.',
+    footer_bot: 'Mit Sorgfalt erstellt · Keine Datenspeicherung · MIT Lizenz'
+  }
+};
+
+let currentLang = 'en';
+
+// DB
 const SYSTEMS = {
-  // Europe
   austria: { min: 5, max: 1, inverted: true, label: 'Austria (1-5)', note: 'Lower is better. 1 = best, 5 = worst.' },
   belgium: { min: 0, max: 20, inverted: false, label: 'Belgium (0-20)', note: 'Higher is better. 20 = best.' },
   czechia: { min: 4, max: 1, inverted: true, label: 'Czech Republic (1-4)', note: 'Lower is better. 1 = best, 4 = worst.' },
@@ -19,211 +55,321 @@ const SYSTEMS = {
   sweden: { min: 0, max: 5, inverted: false, label: 'Sweden (0-5)', note: 'Higher is better. 5 = best.' },
   switzerland: { min: 1, max: 6, inverted: false, label: 'Switzerland (1-6)', note: 'Higher is better. 6 = best, 1 = worst.' },
   uk: { min: 0, max: 100, inverted: false, label: 'UK Percentage', note: 'Higher is better. 100% = best.' },
-  
-  // Americas
   usa: { min: 0, max: 4, inverted: false, label: 'US GPA (0-4)', note: 'Higher is better. 4.0 = best.' },
   usa_pct: { min: 0, max: 100, inverted: false, label: 'US Percentage', note: 'Higher is better. 100% = best.' },
   canada: { min: 0, max: 4, inverted: false, label: 'Canada GPA (0-4)', note: 'Higher is better. 4.0 = best.' },
   brazil: { min: 0, max: 10, inverted: false, label: 'Brazil (0-10)', note: 'Higher is better. 10 = best.' },
   mexico: { min: 0, max: 10, inverted: false, label: 'Mexico (0-10)', note: 'Higher is better. 10 = best.' },
-  
-  // Asia & Pacific
   china: { min: 0, max: 100, inverted: false, label: 'China (0-100)', note: 'Higher is better. 100 = best.' },
   india: { min: 0, max: 100, inverted: false, label: 'India (0-100)', note: 'Higher is better. 100 = best.' },
   japan: { min: 0, max: 100, inverted: false, label: 'Japan (0-100)', note: 'Higher is better. 100 = best.' },
   australia: { min: 0, max: 100, inverted: false, label: 'Australia (0-100)', note: 'Higher is better. 100 = best.' },
   pakistan: { min: 0, max: 100, inverted: false, label: 'Pakistan (0-100)', note: 'Higher is better. 100 = best.' },
   turkey: { min: 0, max: 100, inverted: false, label: 'Turkey (0-100)', note: 'Higher is better. 100 = best.' },
-  
-  // Other
   custom: { min: '', max: '', inverted: false, label: 'Custom Scale', note: 'Enter your own min and max values.' }
 };
 
-// DOM Elements
-const countrySelect = document.getElementById('country');
-const minInput = document.getElementById('min-grade');
-const maxInput = document.getElementById('max-grade');
-const obtainedInput = document.getElementById('obtained');
-const systemBadge = document.getElementById('system-badge');
-const errorMsg = document.getElementById('error-msg');
+let transcript = [];
 
-const resultEmpty = document.getElementById('result-empty');
-const resultContent = document.getElementById('result-content');
-
-// Auto-fill min/max based on selected country
-countrySelect.addEventListener('change', (e) => {
-  const val = e.target.value;
-  if (!val) {
-    systemBadge.textContent = '';
-    minInput.value = '';
-    maxInput.value = '';
-    minInput.disabled = false;
-    maxInput.disabled = false;
-    return;
-  }
+// DOM Init
+document.addEventListener('DOMContentLoaded', () => {
+  setupLanguageToggle();
+  setupThemeToggle();
+  setupSearchableDropdown('from');
+  setupSearchableDropdown('to');
   
-  const system = SYSTEMS[val];
-  systemBadge.textContent = system.note;
+  // Set defaults
+  document.getElementById('country-to').value = 'germany';
+  document.getElementById('country-to-input').value = 'Germany (1-5)';
   
-  if (val === 'custom') {
-    minInput.value = '';
-    maxInput.value = '';
-    minInput.disabled = false;
-    maxInput.disabled = false;
-    minInput.focus();
-  } else {
-    minInput.value = system.min;
-    maxInput.value = system.max;
-    // Don't completely disable, just let them know it's standard
-    // Some universities might slightly modify the standard range
-  }
+  document.getElementById('obtained').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') convert();
+  });
+  
+  document.getElementById('swap-systems').addEventListener('click', () => {
+    const fromVal = document.getElementById('country-from').value;
+    const fromText = document.getElementById('country-from-input').value;
+    const toVal = document.getElementById('country-to').value;
+    const toText = document.getElementById('country-to-input').value;
+    
+    document.getElementById('country-from').value = toVal;
+    document.getElementById('country-from-input').value = toText;
+    document.getElementById('country-to').value = fromVal;
+    document.getElementById('country-to-input').value = fromText;
+    
+    updateBadge('from', toVal);
+    updateBadge('to', fromVal);
+  });
 });
 
-// Run conversion on Enter key
-obtainedInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    convert();
-  }
-});
+// Translation Logic
+function setupLanguageToggle() {
+  const btn = document.getElementById('lang-toggle');
+  btn.addEventListener('click', () => {
+    currentLang = currentLang === 'en' ? 'de' : 'en';
+    btn.textContent = currentLang === 'en' ? 'DE' : 'EN';
+    applyTranslations();
+  });
+}
 
-function getECTS(germanGrade) {
-  if (germanGrade <= 1.5) return 'A';
-  if (germanGrade <= 2.5) return 'B';
-  if (germanGrade <= 3.5) return 'C';
-  if (germanGrade <= 4.0) return 'D';
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (i18n[currentLang][key]) {
+      el.innerHTML = i18n[currentLang][key];
+    }
+  });
+}
+
+// Theme Logic
+function setupThemeToggle() {
+  const btn = document.getElementById('theme-toggle');
+  btn.addEventListener('click', () => {
+    const isLight = document.body.classList.toggle('light-theme');
+    btn.textContent = isLight ? '🌙' : '☀️';
+  });
+}
+
+// Custom Searchable Dropdown
+function setupSearchableDropdown(type) {
+  const input = document.getElementById(`country-${type}-input`);
+  const hidden = document.getElementById(`country-${type}`);
+  const list = document.getElementById(`dropdown-list-${type}`);
+  const wrap = document.getElementById(`select-wrap-${type}`);
+  
+  // Render options
+  let html = '';
+  for (const [key, sys] of Object.entries(SYSTEMS)) {
+    html += `<div class="dropdown-item" data-value="${key}"><strong>${sys.label}</strong></div>`;
+  }
+  list.innerHTML = html;
+  
+  input.addEventListener('focus', () => {
+    list.classList.add('show');
+  });
+  
+  input.addEventListener('input', (e) => {
+    const val = e.target.value.toLowerCase();
+    list.classList.add('show');
+    list.querySelectorAll('.dropdown-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(val) ? 'block' : 'none';
+    });
+  });
+  
+  list.addEventListener('mousedown', (e) => {
+    const item = e.target.closest('.dropdown-item');
+    if (item) {
+      const val = item.getAttribute('data-value');
+      const text = item.querySelector('strong').textContent;
+      hidden.value = val;
+      input.value = text;
+      list.classList.remove('show');
+      updateBadge(type, val);
+    }
+  });
+  
+  input.addEventListener('blur', () => {
+    setTimeout(() => list.classList.remove('show'), 150);
+  });
+}
+
+function updateBadge(type, val) {
+  const badge = document.getElementById(`system-badge-${type}`);
+  if (!val) { badge.textContent = ''; return; }
+  const sys = SYSTEMS[val];
+  badge.textContent = sys.note;
+  
+  if (type === 'from') {
+    const customRow = document.getElementById('custom-min-max-row');
+    const minInput = document.getElementById('min-grade');
+    const maxInput = document.getElementById('max-grade');
+    
+    if (val === 'custom') {
+      customRow.style.display = 'grid';
+      minInput.value = ''; maxInput.value = '';
+    } else {
+      customRow.style.display = 'none';
+      minInput.value = sys.min; maxInput.value = sys.max;
+    }
+  }
+}
+
+// Conversion Logic
+function getECTS(pct) {
+  if (pct >= 0.9) return 'A';
+  if (pct >= 0.65) return 'B';
+  if (pct >= 0.35) return 'C';
+  if (pct >= 0.0) return 'D';
   return 'F';
 }
 
-function getLabel(germanGrade) {
-  if (germanGrade <= 1.5) return 'Sehr gut (Very good)';
-  if (germanGrade <= 2.5) return 'Gut (Good)';
-  if (germanGrade <= 3.5) return 'Befriedigend (Satisfactory)';
-  if (germanGrade <= 4.0) return 'Ausreichend (Sufficient)';
-  return 'Nicht bestanden (Fail)';
-}
-
 function convert() {
-  // Reset error
+  const errorMsg = document.getElementById('error-msg');
   errorMsg.textContent = '';
   
-  const obtained = parseFloat(obtainedInput.value);
-  const min = parseFloat(minInput.value);
-  const max = parseFloat(maxInput.value);
-  const selectedCountry = countrySelect.value;
+  const fromSys = document.getElementById('country-from').value;
+  const toSys = document.getElementById('country-to').value;
+  let obtained = parseFloat(document.getElementById('obtained').value);
   
-  // Validation
-  if (isNaN(obtained)) {
-    errorMsg.textContent = 'Please enter your obtained grade.';
-    return;
-  }
-  if (isNaN(min) || isNaN(max)) {
-    errorMsg.textContent = 'Please provide valid minimum and maximum grades.';
-    return;
-  }
-  if (min === max) {
-    errorMsg.textContent = 'Min and max grades cannot be the same.';
-    return;
-  }
+  if (!fromSys || !toSys) return errorMsg.textContent = 'Select both systems.';
+  if (isNaN(obtained)) return errorMsg.textContent = 'Enter obtained grade.';
   
-  // Check if inverted scale
-  let inverted = false;
-  if (selectedCountry && SYSTEMS[selectedCountry] && SYSTEMS[selectedCountry].inverted) {
-    inverted = true;
-  } else if (min > max) {
-    // Auto-detect inverted if user manually entered min > max
-    inverted = true;
-  }
+  const src = SYSTEMS[fromSys];
+  const tgt = SYSTEMS[toSys];
   
-  // Check boundaries
-  if (!inverted) {
-    if (obtained < min || obtained > max) {
-      errorMsg.textContent = `Grade must be between ${min} and ${max}.`;
-      return;
-    }
+  let srcMin = parseFloat(document.getElementById('min-grade').value) || parseFloat(src.min);
+  let srcMax = parseFloat(document.getElementById('max-grade').value) || parseFloat(src.max);
+  
+  if (isNaN(srcMin) || isNaN(srcMax) || srcMin === srcMax) return errorMsg.textContent = 'Invalid min/max bounds.';
+  
+  let invertedSrc = src.inverted;
+  if (srcMin > srcMax) invertedSrc = true;
+  
+  // 1. Compute Percentile from Source
+  let pct = 0;
+  if (fromSys === 'germany') {
+    pct = (4 - obtained) / 3;
   } else {
-    // Inverted: min is the worst (higher number), max is best (lower number)
-    // E.g., min: 5, max: 1
-    if (obtained > min || obtained < max) {
-      errorMsg.textContent = `Grade must be between ${max} (best) and ${min} (worst).`;
-      return;
+    if (!invertedSrc) {
+      pct = (obtained - srcMin) / (srcMax - srcMin);
+    } else {
+      pct = (srcMin - obtained) / (srcMin - srcMax);
     }
   }
   
-  // Calculate Percentile
-  let percentile;
-  if (!inverted) {
-    percentile = (obtained - min) / (max - min);
+  // 2. Map Percentile to Target
+  let targetGrade = 0;
+  let tgtMin = tgt.min; let tgtMax = tgt.max;
+  let invertedTgt = tgt.inverted;
+  
+  if (toSys === 'germany') {
+    targetGrade = 1 + 3 * (1 - pct);
   } else {
-    // For inverted, if you get 2 on a 1-5 scale (where 1 is best)
-    // worst (min) = 5, best (max) = 1
-    // (5 - 2) / (5 - 1) = 3 / 4 = 0.75 percentile
-    percentile = (min - obtained) / (min - max);
+    if (!invertedTgt) {
+      targetGrade = tgtMin + pct * (tgtMax - tgtMin);
+    } else {
+      targetGrade = tgtMin - pct * (tgtMin - tgtMax);
+    }
   }
   
-  // Modified Bavarian Formula
-  // German Grade = 1 + 3 * (1 - Percentile)
-  // Max grade gives 1.0. Min grade gives 4.0.
-  let germanGrade = 1 + 3 * (1 - percentile);
-  
-  // Format to 2 decimal places max
-  germanGrade = Math.round(germanGrade * 100) / 100;
-  
-  // Show Results
-  displayResult(germanGrade, percentile, obtained, min, max, inverted);
+  targetGrade = Math.round(targetGrade * 100) / 100;
+  displayResult(targetGrade, pct, obtained, src, tgt, toSys);
 }
 
-function displayResult(germanGrade, percentile, obtained, min, max, inverted) {
-  resultEmpty.style.display = 'none';
-  resultContent.style.display = 'block';
+function displayResult(targetGrade, pct, obtained, src, tgt, toSysId) {
+  document.getElementById('result-empty').style.display = 'none';
+  document.getElementById('result-content').style.display = 'block';
   
-  document.getElementById('res-grade').textContent = germanGrade.toFixed(2);
-  document.getElementById('res-label').textContent = getLabel(germanGrade);
-  document.getElementById('res-badge').textContent = germanGrade.toFixed(1);
+  document.getElementById('res-grade').textContent = targetGrade.toFixed(2);
+  document.getElementById('res-label').textContent = toSysId === 'germany' ? getGermanLabel(targetGrade) : tgt.label;
+  document.getElementById('res-badge').textContent = targetGrade.toFixed(1);
+  document.getElementById('res-badge-sub').textContent = tgt.label;
   
-  // Calculate position for visual scale (1 to 5)
-  // 1 is 0%, 5 is 100%
-  let scalePos = ((germanGrade - 1) / 4) * 100;
+  // Scale Pos
+  let scalePos = pct * 100;
   scalePos = Math.max(0, Math.min(100, scalePos));
-  
   setTimeout(() => {
     document.getElementById('scale-fill').style.width = `${scalePos}%`;
     document.getElementById('scale-thumb').style.left = `${scalePos}%`;
   }, 50);
   
+  document.getElementById('scale-best').innerHTML = `${tgt.max}<br/><small>${i18n[currentLang].lbl_best}</small>`;
+  document.getElementById('scale-worst').innerHTML = `${tgt.min}<br/><small>${i18n[currentLang].lbl_worst}</small>`;
+  
   document.getElementById('meta-orig').textContent = obtained;
-  document.getElementById('meta-pct').textContent = `${(percentile * 100).toFixed(1)}%`;
-  document.getElementById('meta-ects').textContent = getECTS(germanGrade);
+  document.getElementById('meta-pct').textContent = `${(pct * 100).toFixed(1)}%`;
+  document.getElementById('meta-ects').textContent = getECTS(pct);
   
   const passEl = document.getElementById('meta-pass');
-  if (germanGrade <= 4.0) {
-    passEl.textContent = 'PASS';
-    passEl.className = 'meta-val pass';
+  if (pct >= 0) {
+    passEl.textContent = 'PASS'; passEl.className = 'meta-val pass';
   } else {
-    passEl.textContent = 'FAIL';
-    passEl.className = 'meta-val fail';
+    passEl.textContent = 'FAIL'; passEl.className = 'meta-val fail';
   }
   
-  // Formula presentation
-  let formulaStr = `1 + 3 × (1 - `;
-  if (!inverted) {
-    formulaStr += `((${obtained} - ${min}) / (${max} - ${min})))`;
-  } else {
-    formulaStr += `((${min} - ${obtained}) / (${min} - ${max})))`;
-  }
+  let formulaStr = toSysId === 'germany' 
+    ? `1 + 3 * (1 - pct)` 
+    : (tgt.inverted ? `Min - Pct * (Min - Max)` : `Min + Pct * (Max - Min)`);
   document.getElementById('formula-text').textContent = formulaStr;
+  
+  // Store for transcript
+  window.lastResult = {
+    course: `Item ${transcript.length + 1}`,
+    srcGrade: obtained,
+    tgtGrade: targetGrade.toFixed(2),
+    status: pct >= 0 ? 'PASS' : 'FAIL',
+    sysLabel: tgt.label
+  };
+}
+
+function getGermanLabel(grade) {
+  if (grade <= 1.5) return 'Sehr gut';
+  if (grade <= 2.5) return 'Gut';
+  if (grade <= 3.5) return 'Befriedigend';
+  if (grade <= 4.0) return 'Ausreichend';
+  return 'Nicht bestanden';
 }
 
 function copyResult() {
   const grade = document.getElementById('res-grade').textContent;
-  const label = document.getElementById('res-label').textContent;
-  const text = `My converted German grade is ${grade} (${label})`;
-  
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector('.copy-btn');
-    const oldText = btn.textContent;
-    btn.textContent = 'Copied to clipboard!';
-    setTimeout(() => {
-      btn.textContent = oldText;
-    }, 2000);
+  const sys = document.getElementById('res-badge-sub').textContent;
+  navigator.clipboard.writeText(`Converted Grade: ${grade} (${sys})`).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = i18n[currentLang].btn_copy, 2000);
   });
+}
+
+function addToTranscript() {
+  if (!window.lastResult) return;
+  const courseName = prompt("Enter Course Name:", window.lastResult.course);
+  if (!courseName) return;
+  window.lastResult.course = courseName;
+  
+  transcript.push(window.lastResult);
+  renderTranscript();
+}
+
+function renderTranscript() {
+  document.getElementById('transcript-section').style.display = 'block';
+  const tbody = document.getElementById('transcript-body');
+  tbody.innerHTML = transcript.map((t, i) => `
+    <tr>
+      <td><strong>${t.course}</strong></td>
+      <td>${t.srcGrade}</td>
+      <td><strong>${t.tgtGrade}</strong> <small>${t.sysLabel}</small></td>
+      <td class="${t.status === 'PASS' ? 'pass' : 'fail'}">${t.status}</td>
+      <td><button class="del-btn" onclick="removeTranscript(${i})">&times;</button></td>
+    }
+  `).join('');
+}
+
+function removeTranscript(index) {
+  transcript.splice(index, 1);
+  if (transcript.length === 0) {
+    document.getElementById('transcript-section').style.display = 'none';
+  } else {
+    renderTranscript();
+  }
+}
+
+function clearTranscript() {
+  transcript = [];
+  document.getElementById('transcript-section').style.display = 'none';
+}
+
+function exportCSV() {
+  if (transcript.length === 0) return;
+  const headers = ['Course', 'Source Grade', 'Target Grade', 'Status'];
+  const rows = transcript.map(t => `"${t.course}",${t.srcGrade},${t.tgtGrade},${t.status}`);
+  const csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.join("\n");
+  
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "transcript.csv");
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
 }
